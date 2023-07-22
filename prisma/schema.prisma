@@ -7,43 +7,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Test code
-model Post {
-  id Int @id @default(autoincrement())
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  title String @db.VarChar(255)
-
-  content String?
-
-  published Boolean @default(false)
-
-  author User @relation(fields: [authorId], references: [id])
-
-  authorId Int
+enum Position {
+  DRIVE
+  BACKHAND
 }
 
-model Profile {
-  id Int @id @default(autoincrement())
+enum BestHand {
+  RIGHT
+  LEFT
+}
 
-  bio String?
-
-  user User @relation(fields: [userId], references: [id])
-
-  userId Int @unique
+enum Status {
+  OPEN
+  CLOSED_TBP
+  CANCELLED
+  FINISHED
 }
 
 model User {
-  id Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  username String @unique
 
-  email String @unique
+  createdAt   DateTime @default(now())
+  displayName String
+  // birthday    DateTime
+  // profilePic ?? nose quin tipus es, suposo que es un link a un S3 bucket d'aquests per a guardar imatges
+  Player      Player[]
 
-  name String?
+  followedBy User[] @relation("UserFollows")
+  following  User[] @relation("UserFollows")
+}
 
-  posts Post[]
+model Player {
+  User   User @relation(fields: [UserId], references: [id])
+  UserId Int  @id
 
-  profile Profile?
+  level         Int      @default(1000)
+  reliability   Float    @default(1)
+  pref_position Position
+  pref_besthand BestHand
+  // pref_schedule ?? nose tampoc quin tipus es, suposo que haura de ser un custom type, o un string
+  pref_zone     String
+  karma         Float    @default(1)
+  gamesWon      Int      @default(0)
+  gamesPlayed   Int      @default(0)
 }
